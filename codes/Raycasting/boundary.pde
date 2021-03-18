@@ -10,8 +10,7 @@ class boundary
   void show()
   {
     stroke(255);
-    strokeWeight(4);
-    //noFill();
+    strokeWeight(2);
     line(this.x1,this.y1,this.x2,this.y2);
   }
   }
