@@ -1,6 +1,6 @@
 int cols=20;
 int rows=cols;
-int sze=800;
+Astar path;
 cell[][] cells=new cell[cols][rows];
 ArrayList<cell> stack=new ArrayList<cell>();
 cell current;
@@ -43,6 +43,23 @@ for(int j=0;j<rows;j++)
   }
  
  }
+ if(contin==false)
+ {
+  path=new Astar(cells);
+  path.display();
+  noLoop();
+  //float posx=cells[0][0].x;
+  //float posy=cells[0][0].y;
+  //noStroke();
+  //fill(0,255,0);
+  //ellipseMode(CORNER);
+  //ellipse(posx*width/cols,posy*height/rows,width*0.8/cols,height*0.8/rows);
+  //fill(255,0,0);
+  //posx=cells[cols-1][rows-1].x;
+  //posy=cells[cols-1][rows-1].y;
+  //ellipse(posx*width/cols,posy*height/rows,width*0.8/cols,height*0.8/rows);
+  //noLoop();
+ }
 }
 
 class cell
@@ -52,12 +69,19 @@ class cell
  float y;
  boolean visited;
  int scale;
+ float g;
+ float h,f;
+ cell previous;
  cell(float i,float j)
  {
  visited=false;
  x=i;
  y=j;
- scale=sze/cols;
+ scale=width/cols;
+ g=0;
+ h=0;
+ previous=null;
+ f=g+h;
  }
  
  cell checkNeighbors()
@@ -135,27 +159,154 @@ class cell
   if(!this.visited)
   fill(0);
   else
-  fill(255,0,255);
+  fill(255);
   rect(this.x*this.scale,this.y*this.scale,this.scale,this.scale);
   if(walls[0])
-    stroke(255);
+    stroke(0);
   else
-    stroke(255,0,255);
+    stroke(255);
   line(this.x*this.scale,this.y*this.scale,(this.x+1)*this.scale,this.y*this.scale);
   if(walls[1])
-    stroke(255);
+    stroke(0);
   else
-    stroke(255,0,255);
+    stroke(255);
   line((this.x+1)*this.scale,this.y*this.scale,(this.x+1)*this.scale,(this.y+1)*this.scale);
   if(walls[2])
-    stroke(255);
+    stroke(0);
   else
-    stroke(255,0,255);  
+    stroke(255);  
   line((this.x+1)*this.scale,(this.y+1)*this.scale,this.x*this.scale,(this.y+1)*this.scale);
   if(walls[3])
-    stroke(255);
+    stroke(0);
   else
-    stroke(255,0,255);  
+    stroke(255);  
   line(this.x*this.scale,(this.y+1)*this.scale,this.x*this.scale,this.y*this.scale);
  }
+}
+class Astar
+{
+ ArrayList<cell> OpenList;
+ ArrayList<cell> ClosedList;
+ int scale;
+ cell[][] grid;
+ Astar(cell[][] grid_)
+ {
+ grid=grid_;
+ OpenList=new ArrayList<cell>();
+ ClosedList=new ArrayList<cell>();
+ OpenList.add(grid[0][0]);
+ scale=width/cols;
+ }
+ void display()
+ {
+   
+
+  while(this.OpenList.size()>0 )
+  { int q=0;
+    for(int i=0;i<this.OpenList.size();i++)
+    {
+      if(this.OpenList.get(i).f<this.OpenList.get(q).f)
+      {
+        q=i;
+      }
+    }
+     cell curr=this.OpenList.get(q);
+     this.OpenList.remove(q);
+     
+     
+     ArrayList<cell> neighbours=this.neighbours(curr);
+     for(int i=0;i<neighbours.size();i++)
+    {
+     cell neighbour=neighbours.get(i);
+     if(!this.isIn(neighbour,this.ClosedList))
+     {
+      float tempG=curr.g+1;
+      boolean isNewPath=false;
+      if(this.isIn(neighbour,this.OpenList))
+      {
+        if(tempG<neighbour.g)
+        {neighbour.g=tempG;
+        isNewPath=true;
+        }}
+        
+        else{
+          neighbour.g=tempG;
+          isNewPath=true;
+          this.OpenList.add(neighbour);
+          
+        }
+        if(isNewPath)
+        {
+          neighbour.h=abs(cols-1-neighbour.x)+abs(cols-1-neighbour.y);
+          neighbour.f=neighbour.g+neighbour.h;
+          neighbour.previous=curr;
+          
+        }
+      }
+       
+     }
+     this.ClosedList.add(curr);
+     
+    }
+  stroke(0);
+  strokeWeight(4);
+ cell temp=this.grid[cols-1][rows-1];
+ while(temp.previous!=null)
+ {
+  line(temp.x*this.scale+this.scale/2,temp.y*this.scale+this.scale/2,temp.previous.x*this.scale+this.scale/2,temp.previous.y*this.scale+this.scale/2); 
+  temp=temp.previous;
+ }
+ 
+  
+ }
+ boolean isIn(cell check,ArrayList<cell> in)
+ {
+  for(cell c:in)
+  {
+   if(c.x==check.x && c.y==check.y)
+   {
+     return true;
+   }
+  }
+  return false;
+ }
+ArrayList<cell> neighbours(cell q)
+{
+  ArrayList<cell> neighbours=new ArrayList<cell>();
+  int i=int(q.x);
+  int j=int(q.y);
+  cell current=this.grid[i][j];
+  int indexi=0;
+  int indexj=0;
+  indexi=i+1;
+  indexj=j;
+  if(!(indexi<0 || indexi>cols-1 || indexj>cols-1 || indexj<0))
+  {
+    if(!current.walls[1])
+      neighbours.add(this.grid[indexi][indexj]);
+  }
+  indexi=i;
+  indexj=j+1;
+  if(!(indexi<0 || indexi>cols-1 || indexj>cols-1 || indexj<0))
+  {
+    if(!current.walls[2])
+      neighbours.add(this.grid[indexi][indexj]);
+  }
+  indexi=i-1;
+  indexj=j;
+  if(!(indexi<0 || indexi>cols-1 || indexj>cols-1 || indexj<0))
+  {
+    if(!current.walls[3])
+      neighbours.add(this.grid[indexi][indexj]);
+  }
+  indexi=i;
+  indexj=j-1;
+  if(!(indexi<0 || indexi>cols-1 || indexj>cols-1 || indexj<0))
+  {
+    if(!current.walls[0])
+      neighbours.add(this.grid[indexi][indexj]);
+  }
+  return neighbours;
+  
+}
 }
