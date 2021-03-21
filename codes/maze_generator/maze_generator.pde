@@ -1,4 +1,6 @@
-int cols=20;
+
+import java.util.*;
+int cols=10;
 int rows=cols;
 Astar path;
 cell[][] cells=new cell[cols][rows];
@@ -48,17 +50,6 @@ for(int j=0;j<rows;j++)
   path=new Astar(cells);
   path.display();
   noLoop();
-  //float posx=cells[0][0].x;
-  //float posy=cells[0][0].y;
-  //noStroke();
-  //fill(0,255,0);
-  //ellipseMode(CORNER);
-  //ellipse(posx*width/cols,posy*height/rows,width*0.8/cols,height*0.8/rows);
-  //fill(255,0,0);
-  //posx=cells[cols-1][rows-1].x;
-  //posy=cells[cols-1][rows-1].y;
-  //ellipse(posx*width/cols,posy*height/rows,width*0.8/cols,height*0.8/rows);
-  //noLoop();
  }
 }
 
@@ -72,6 +63,7 @@ class cell
  float g;
  float h,f;
  cell previous;
+ List<cell> neighbours;
  cell(float i,float j)
  {
  visited=false;
@@ -82,6 +74,7 @@ class cell
  h=0;
  previous=null;
  f=g+h;
+ neighbours=new ArrayList<cell>();
  }
  
  cell checkNeighbors()
@@ -199,7 +192,11 @@ class Astar
  }
  void display()
  {
-   
+   for(int i=0;i<cols;i++)
+   {for(int j=0;j<rows;j++)
+   {
+     this.grid[i][j].neighbours=this.neighbours(this.grid[i][j]);
+   }}
 
   while(this.OpenList.size()>0 )
   { int q=0;
@@ -214,7 +211,7 @@ class Astar
      this.OpenList.remove(q);
      
      
-     ArrayList<cell> neighbours=this.neighbours(curr);
+     List<cell> neighbours=curr.neighbours;
      for(int i=0;i<neighbours.size();i++)
     {
      cell neighbour=neighbours.get(i);
