@@ -8,7 +8,7 @@ menu m=new menu();
 void setup()
 {
   size(800,800);
-  background(120);
+  background(255);
  
 }
 
@@ -22,13 +22,13 @@ void mouseDragged()
 }
 void draw()
 {
- if(m.run)
+ if(m.run || m.rrtSTAR)
  {
  m.render();
  }
  else
  {
-   background(120);
+   background(255);
    m.render();
  }
 }
@@ -51,16 +51,18 @@ class menu
  boolean run;
  boolean addObs;
  boolean clearObs;
+ boolean rrtSTAR;
  menu()
  {
   start=false;
   end=false;
   run=false;
+  rrtSTAR=false;
  }
  void render()
  {
 
- fill(color(240,220,220),100);
+ fill(color(240,220,220));
  stroke(0);
  rectMode(CENTER);
  rect(50,20,100,40);
@@ -68,18 +70,21 @@ class menu
  rect(250,20,100,40);
  rect(350,20,100,40);
  rect(450,20,100,40);
+ fill(color(200,240,220));
+ rect(550,20,100,40);
  fill(0);
  text("START",30,25);
  text("END",140,25);
  text("RUN",240,25);
  text("add obstacles",310,25);
  text("clear obstacles",410,25);
+ text("RUN RRT*",520,25);
  
-if(this.run)
+if(this.run || this.rrtSTAR)
    {
      if(path==null)
      {  
-     path=new RRT(MaxIterations,Dist,strt,endPoint,obs);
+     path=new RRT(MaxIterations,Dist,strt,endPoint,obs,this.rrtSTAR);
      }
      else
      {
@@ -112,7 +117,7 @@ if(this.run)
    {
      this.start=true;
      this.end=false;
-      
+     this.clearObs=false;    
       this.addObs=false;
    }
    else if (mouseX>100 && mouseX<200 && mouseY<40 && mouseY>0)
@@ -143,6 +148,14 @@ if(this.run)
      this.end=false;
       this.addObs=false;
       this.clearObs=true;
+   }
+  else if (mouseX>500 && mouseX<600 && mouseY<40 && mouseY>0)
+   {
+     this.start=false;
+     this.end=false;
+      this.addObs=false;
+      this.clearObs=false;
+      this.rrtSTAR=true;
    }
    if(this.start)
    {

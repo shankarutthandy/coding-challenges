@@ -7,7 +7,8 @@ class RRT
   PVector end;
   PVector start;
   ArrayList<obstacle> obstacles;
-  RRT(int iterations_,float dist_,PVector start_,PVector end_,ArrayList<obstacle> obs)
+  boolean star;
+  RRT(int iterations_,float dist_,PVector start_,PVector end_,ArrayList<obstacle> obs,boolean star_)
   {
     vertices=new ArrayList<vertx>();
     start=start_;
@@ -17,6 +18,7 @@ class RRT
     reached=false;
     end=end_;
     obstacles=obs;
+    this.star=star_;
   }
   void update()
   {
@@ -40,10 +42,15 @@ class RRT
     vertx v=new vertx(ran,winner.weight+this.dist,winner);
     if(!this.colliding(v))
     {
+      if(this.star)
+      {
+      this.rewire(v);
+      }
       if(PVector.dist(ran,this.end)<10)
     {
       this.reached=true;
     }
+    
     this.vertices.add(v);
     }
     this.iterations--;
@@ -63,7 +70,7 @@ class RRT
     vertx latest=this.vertices.get(this.vertices.size()-1);
     while(latest.previous!=null)
     {
-      stroke(0);
+      stroke(color(0,0,255));
       line(latest.pose.x,latest.pose.y,latest.previous.pose.x,latest.previous.pose.y);
       latest=latest.previous;
     }
@@ -71,6 +78,7 @@ class RRT
     {
       vertx e=this.vertices.get(this.vertices.size()-1);
       stroke(color(0,255,0));
+      text("COST:"+str(e.weight),700,20);
       while(e.previous!=null)
       {
         strokeWeight(4);
@@ -78,7 +86,23 @@ class RRT
         e=e.previous;
       }
       noLoop();
+      //saveFrame("rrt.png");
     }
+  }
+  void rewire(vertx curr)
+  {
+    vertx min=curr.previous;
+    for(vertx v:this.vertices)
+    {
+      if(PVector.dist(v.pose,curr.pose)<30)
+      {
+      if(min.weight+PVector.dist(curr.pose,min.pose)>v.weight+PVector.dist(v.pose,curr.pose))
+      {
+        min=v;
+      }
+    }
+    }
+    curr.previous=min;
   }
   boolean colliding(vertx v)
   {
