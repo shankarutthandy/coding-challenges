@@ -8,7 +8,9 @@ class RRT
   PVector start;
   ArrayList<obstacle> obstacles;
   boolean star;
-  RRT(int iterations_,float dist_,PVector start_,PVector end_,ArrayList<obstacle> obs,boolean star_)
+ float goalBias;
+ float rewireRadius;
+  RRT(int iterations_,float dist_,PVector start_,PVector end_,ArrayList<obstacle> obs,boolean star_,float goalBias_,float rr)
   {
     vertices=new ArrayList<vertx>();
     start=start_;
@@ -18,12 +20,22 @@ class RRT
     reached=false;
     end=end_;
     obstacles=obs;
-    this.star=star_;
+    star=star_;
+    goalBias=goalBias_;
+    rewireRadius=rr;
   }
   void update()
   {
     if(this.iterations>0 && !this.reached)
-    {PVector ran=new PVector(floor(random(width)),floor(random(height)));
+    {
+      PVector ran=new PVector(floor(random(width)),floor(random(height)));
+    if(random(1)<this.goalBias)
+    {
+      float radius=50;
+      ran=PVector.random2D();
+      ran.mult(random(0,radius));
+      ran.add(end);
+    }
     vertx winner=this.vertices.get(this.vertices.size()-1);
     float dmin=PVector.dist(winner.pose,ran);
     for(vertx v:this.vertices)
@@ -58,6 +70,7 @@ class RRT
   }
   void show()
   {
+    noStroke();
     fill(color(0,255,0));
     ellipse(this.start.x,this.start.y,20,20);
     fill(color(255,0,0));
@@ -71,14 +84,14 @@ class RRT
     while(latest.previous!=null)
     {
       stroke(color(0,0,255));
+      strokeWeight(1);
       line(latest.pose.x,latest.pose.y,latest.previous.pose.x,latest.previous.pose.y);
       latest=latest.previous;
     }
     if(this.reached)
     {
       vertx e=this.vertices.get(this.vertices.size()-1);
-      stroke(color(0,255,0));
-      text("COST:"+str(e.weight),700,20);
+      stroke(color(0,240,0));
       while(e.previous!=null)
       {
         strokeWeight(4);
@@ -86,7 +99,7 @@ class RRT
         e=e.previous;
       }
       noLoop();
-      //saveFrame("rrt.png");
+      //saveFrame("rrt-star.png");
     }
   }
   void rewire(vertx curr)
@@ -94,7 +107,7 @@ class RRT
     vertx min=curr.previous;
     for(vertx v:this.vertices)
     {
-      if(PVector.dist(v.pose,curr.pose)<30)
+      if(PVector.dist(v.pose,curr.pose)<this.rewireRadius)
       {
       if(min.weight+PVector.dist(curr.pose,min.pose)>v.weight+PVector.dist(v.pose,curr.pose))
       {
